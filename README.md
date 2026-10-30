@@ -1,64 +1,72 @@
 # idvault
 
-Backup and restore for directory users and groups (the kind of data that lives in Active Directory or Entra ID), written in Go with no dependencies outside the standard library.
-
-It takes snapshots of a directory, flags snapshots that look like an attack, and restores either everything or a few users and groups. Restores that touch privileged groups like Domain Admins need two security officers to approve them. There's a small web console and a JSON API.
-
-The directory here is an in-memory stand-in loaded with a sample company (harbourline.local, 60 accounts). Connecting to a real directory is the main thing missing; see the end of this file.
+Backup and restore for directory users and groups, like the data in Active Directory or Entra ID. It takes snapshots, flags ones that look like an attack, and restores everything or just a few users. Written in Go with only the standard library.
 
 ![Snapshot flagged by the detector](docs/04-snapshots-flagged.png)
-![Restore waiting for two approvals](docs/06-restore-waiting.png)
 
-## Running it
+## Requirements
 
-Needs Go 1.22 or newer.
+Go 1.22 or newer.
+
+## Getting Started
 
 ```
-make dev     # console at http://localhost:8080 with sample accounts, sign in from the picker
-make demo    # runs an attack and recovery in the terminal against the real API
+make dev    # web console at http://127.0.0.1:8090
+make demo   # attack and recovery in the terminal
 make test
 ```
 
-`make dev` uses fixed tokens (`dev-<name>`) so you can switch accounts quickly. Don't use it on a network. `make run` starts the server normally; it prints a random token for each account on first start and only stores their hashes.
+`make dev` loads a sample company (harbourline.local, 60 accounts) and lets you sign in as any account from a list. It uses fixed passwords, so only run it on your own machine.
 
-To try the main flow in the console:
+## Walkthrough
 
-1. Sign in as **hlindqvist** (helpdesk) and run the simulated attack on the Directory page.
-2. Sign in as **amehta** and take a snapshot. It gets flagged. Try deleting an older snapshot; the lock refuses it.
-3. Sign in as **kasante**, preview a full restore from the last clean snapshot with "Match the snapshot exactly", and request approval.
-4. Approve as **gsantos** and **rmalhotra**.
-5. Back as **kasante**, preview again and run the restore.
-6. Sign in as **taziz** and check the audit log chain.
+1. Sign in as **hlindqvist** (helpdesk) and run the attack on the Directory page. It deletes 25 users and adds a backdoor account to Domain Admins.
+2. Sign in as **amehta** and take a snapshot. It gets flagged. Try deleting an older snapshot and the lock stops you.
+3. Sign in as **kasante**, go to Restore, pick "Match the snapshot exactly" and preview. Then request approval.
+4. Approve it as **gsantos**, then as **rmalhotra**.
+5. Back as **kasante**, preview again and run the restore. The directory is back to how it was, without the backdoor.
+6. Sign in as **taziz** and check the audit log.
 
-## How it works
+![Restore waiting for two approvals](docs/06-restore-waiting.png)
 
-**Storage.** Each user and group is saved as a JSON file named by its SHA-256 hash. A snapshot is a manifest listing those hashes plus the hash of the previous manifest. Records that didn't change since the last snapshot aren't written again, so a snapshot after one edit stores one new file. Every read re-hashes the file, so a changed or corrupted backup is caught before it's restored.
+## Architecture
 
-**Locks.** Each policy has a lock period. Until it passes, the code refuses to delete the snapshot, for every role. The newest snapshot is never pruned.
+### Snapshot Storage
 
-**Detection.** Each snapshot is compared with the one before it. Deleting or disabling a large share of users in one interval, deleting groups, or adding someone to a privileged group marks it flagged. Once a snapshot is flagged, later ones are compared with the last clean snapshot instead, otherwise a quiet hour after an attack would look clean. A security officer can overrule a verdict, with a reason that goes in the audit log.
+Each user and group is stored once under its SHA-256 hash, so a snapshot after a small change only writes what changed. Records are re-hashed when read, so a tampered backup is caught before it's used.
 
-**Restore.** A restore is planned first and you see every change before anything runs. "Bring back what's missing" never deletes. "Match the snapshot exactly" also removes what was added since, like an attacker's account. Restoring one user also restores their group memberships, and the preview warns you if one of their groups was deleted too. Before a restore runs, the current state is saved as a snapshot so it can be undone.
+### Retention Locks and Access Control
 
-**Approvals.** The approval is tied to a hash of the plan. If the directory changes between approval and running, the plan is different, the hash doesn't match, and the restore is refused. Approvals are single use, expire after 30 minutes, and can't be given by the person who asked.
+Snapshots can't be deleted until their lock period ends, by anyone. The helpdesk role has no access to backups at all, since that's the account attackers usually get.
 
-**Roles.** The helpdesk role that manages users has no access to backups at all, since that's the kind of account that gets phished. Nobody can both run and approve a restore.
+### Anomaly Detection
 
-**Audit log.** Every request is logged, including refused ones. Each line includes the hash of the line before, so editing or deleting a line breaks the chain.
+Mass deletions, mass disabling and new members in privileged groups get a snapshot flagged. After an attack, later snapshots stay flagged until the directory is actually fixed.
 
-## Layout
+### Restore
+
+You always see a preview first. Restoring one user also puts them back in their groups. The current state is saved before every restore, so it can be undone.
+
+### Approvals
+
+Restores that touch privileged groups need two security officers, and nobody can approve their own request. The approval covers that exact plan, so if the directory changes in between, it has to be approved again.
+
+### Audit Log
+
+Every request is logged, including refused ones. Each entry includes the hash of the one before, so edits show up.
+
+## Project Structure
 
 ```
 cmd/idvault          serve and demo commands
-internal/directory   users, groups, diff, sample data
-internal/store       content-addressed files, manifests, locks
-internal/snapshot    taking and loading snapshots, finding the last clean one
+internal/directory   users, groups, sample data
+internal/store       snapshot files, hashes, locks
+internal/snapshot    taking snapshots, finding the last clean one
 internal/anomaly     detection rules
-internal/restore     planning and running restores
-internal/rbac        roles and tokens
+internal/restore     restore planning
+internal/rbac        roles and login tokens
 internal/approval    two-person approval
-internal/audit       hash-chained log
-internal/scheduler   runs policies on a timer
-internal/api         HTTP API and the web console (internal/api/ui)
+internal/audit       audit log
+internal/api         HTTP API and web console
 ```
 
