@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms of use | idvault</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><img src="/static/favicon.svg" alt="">idvault</a>
+  </header>
+  <article class="doc">
+    <h1>Terms of use</h1>
+    <p class="updated">Last updated October 29, 2026</p>
+
+    <p>These terms apply to anyone who signs in to an idvault console. By signing in you agree to them. Your organization may have its own policies that also apply.</p>
+
+    <h2>Authorized use only</h2>
+    <ul>
+      <li>Use only the account and token you were given. Don't share your token. If you think it has been exposed, tell your administrator so it can be replaced.</li>
+      <li>Use idvault only for the work your role covers: taking and checking backups, restoring directory data, approving restores, or reviewing the audit log.</li>
+      <li>Don't try to get around the role checks, approval requirements or snapshot locks, and don't change files in the data directory by hand.</li>
+    </ul>
+
+    <h2>Everything is logged</h2>
+    <p>Every request you make is written to the audit log with your account name and the time, including requests that are refused. The log is designed so that changes to it can be detected.</p>
+
+    <h2>Restores and approvals</h2>
+    <ul>
+      <li>A restore changes the live directory. Preview it first and make sure you understand what it will add, change or remove.</li>
+      <li>When you approve a restore, you are confirming that you have reviewed it and that it should run. Only approve requests you have checked.</li>
+      <li>idvault saves the current state before every restore so it can be undone, but restoring can still lock people out or give them access until the undo is done. Coordinate with your team.</li>
+    </ul>
+
+    <h2>Development mode</h2>
+    <p>A server started with <code>-dev</code> uses fixed, publicly known tokens and is meant for local testing with sample data only. Don't run it on a network or with real directory data.</p>
+
+    <h2>No warranty</h2>
+    <p>idvault is provided as is, without warranty of any kind. The organization running it is responsible for testing its backups and restores, for protecting the server it runs on, and for keeping additional copies of critical data.</p>
+
+    <h2>Changes to these terms</h2>
+    <p>These terms may be updated with new versions of idvault. The date at the top shows when they last changed.</p>
+
+    <p><a href="/">Back to idvault</a> &nbsp; <a href="/privacy">Privacy policy</a></p>
+  </article>
+</body>
+</html>

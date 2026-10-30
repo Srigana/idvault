@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy policy | idvault</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><img src="/static/favicon.svg" alt="">idvault</a>
+  </header>
+  <article class="doc">
+    <h1>Privacy policy</h1>
+    <p class="updated">Last updated October 29, 2026</p>
+
+    <p>idvault is software that your organization runs on its own server. This page explains what it stores, where, and for how long. The organization running it decides who can access that data and is responsible for it. If you have questions about a specific installation, ask its administrator.</p>
+
+    <h2>What idvault stores</h2>
+    <ul>
+      <li><strong>Copies of your directory.</strong> Each snapshot contains the users and groups that existed at that moment: usernames, display names, email addresses, job titles, departments, whether an account is enabled, and group memberships.</li>
+      <li><strong>Console accounts.</strong> The name and roles of each person who can sign in. Access tokens are stored only as SHA-256 hashes, so the stored file can't be used to sign in.</li>
+      <li><strong>An audit log.</strong> For every request: the time, the account that made it, what it tried to do, and whether it was allowed. Refused requests are logged too.</li>
+      <li><strong>Review notes.</strong> When a security officer marks a snapshot clean or flagged, their name, the verdict and the reason they gave.</li>
+    </ul>
+
+    <h2>Where it is stored</h2>
+    <p>Everything is written to the data directory on the server that runs idvault. idvault does not send data to any other service. It has no analytics, no tracking, no advertising and no third-party scripts, and the console's security headers block it from loading anything from another site.</p>
+
+    <h2>What your browser stores</h2>
+    <p>After you sign in, your access token is kept in your browser's session storage for that tab so you stay signed in while you move between pages. It is removed when you sign out or close the tab. idvault does not set cookies.</p>
+
+    <h2>How long it is kept</h2>
+    <ul>
+      <li>Snapshots are kept for the retention period of the policy that created them, then deleted automatically. During their lock period nobody can delete them, including administrators.</li>
+      <li>Records shared by several snapshots are removed once no remaining snapshot uses them.</li>
+      <li>The audit log and review notes are kept until an administrator removes them from the server. idvault never edits or deletes audit entries itself.</li>
+    </ul>
+
+    <h2>Who can see it</h2>
+    <p>Access depends on your role. Directory administrators can see and change the live directory but not backups. Restore operators and security officers can see snapshot contents. Auditors can read snapshots and the audit log. Anyone with access to the server itself can read the data directory, so the organization running idvault should limit that access.</p>
+
+    <h2>Your choices</h2>
+    <p>Because your directory record is managed by your organization, requests to see, correct or delete information about you should go to your organization's IT or privacy contact. Removing data from locked snapshots is only possible after the lock expires.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If a new version of idvault changes what is stored, this page will be updated and the date at the top will change.</p>
+
+    <p><a href="/">Back to idvault</a> &nbsp; <a href="/terms">Terms of use</a></p>
+  </article>
+</body>
+</html>
