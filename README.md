@@ -62,11 +62,3 @@ internal/scheduler   runs policies on a timer
 internal/api         HTTP API and the web console (internal/api/ui)
 ```
 
-## Not done yet
-
-- A real connector (LDAP, or Microsoft Graph for Entra ID) implementing `directory.Source` and `directory.Writer`.
-- The lock is only enforced by this program. Someone with shell access to the server can still delete files. Storing snapshots in S3 with Object Lock would fix that.
-- Pending approvals are kept in memory and are lost on restart.
-- Restoring a single attribute (say, a user's manager) instead of the whole user.
-- Loading a snapshot reads every record. For a large directory it should compare manifests by hash and only read what changed.
-- Detection thresholds are fixed numbers rather than learned from normal activity.
